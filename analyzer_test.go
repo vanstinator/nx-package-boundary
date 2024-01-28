@@ -26,33 +26,33 @@ func makeAnalyzer() *analysis.Analyzer {
 	}
 }
 
-// func TestIncorrectFlags(t *testing.T) {
-// 	assertWrongAllowedTagsError := func(msg string, err error) {
-// 		if err == nil || err.Error() != errWrongAllowedTags.Error() {
-// 			t.Errorf("Wrong error for invalid usage[%q]: %v", msg, err)
-// 		}
-// 	}
-// 	a := makeAnalyzer()
-// 	flg := a.Flags.Lookup(FlagAllowedTags)
-// 	assertWrongAllowedTagsError("empty flag", flg.Value.Set(""))
-// 	assertWrongAllowedTagsError("white space only", flg.Value.Set("   "))
-// 	assertWrongAllowedTagsError("no colons", flg.Value.Set("no colons"))
-// 	assertWrongAllowedTagsError("no tags", flg.Value.Set("scope:test|"))
-// }
+func TestIncorrectFlags(t *testing.T) {
+	assertWrongAllowedTagsError := func(msg string, err error) {
+		if err == nil || err.Error() != errWrongAllowedTags.Error() {
+			t.Errorf("Wrong error for invalid usage[%q]: %v", msg, err)
+		}
+	}
+	a := makeAnalyzer()
+	flg := a.Flags.Lookup(FlagAllowedTags)
+	assertWrongAllowedTagsError("empty flag", flg.Value.Set(""))
+	assertWrongAllowedTagsError("white space only", flg.Value.Set("   "))
+	assertWrongAllowedTagsError("no colons", flg.Value.Set("no colons"))
+	assertWrongAllowedTagsError("no tags", flg.Value.Set("scope:test|"))
+}
 
-// func TestCorrectFlags(t *testing.T) {
-// 	a := makeAnalyzer()
-// 	flg := a.Flags.Lookup(FlagAllowedTags)
-// 	if err := flg.Value.Set("scope:test|tag1,tag2"); err != nil {
-// 		t.Fatalf("Unexpected error: %v", err)
-// 	}
-// 	if err := flg.Value.Set("scope:test|scope:test2"); err != nil {
-// 		t.Fatalf("Unexpected error: %v", err)
-// 	}
-// 	if err := flg.Value.Set("scope:test|scope:test2,scope:test3"); err != nil {
-// 		t.Fatalf("Unexpected error: %v", err)
-// 	}
-// }
+func TestCorrectFlags(t *testing.T) {
+	a := makeAnalyzer()
+	flg := a.Flags.Lookup(FlagAllowedTags)
+	if err := flg.Value.Set("scope:test|tag1,tag2"); err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+	if err := flg.Value.Set("scope:test|scope:test2"); err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+	if err := flg.Value.Set("scope:test|scope:test2,scope:test3"); err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+}
 
 func TestAnalyzer(t *testing.T) {
 	testdata := analysistest.TestData()
