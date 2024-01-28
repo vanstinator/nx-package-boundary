@@ -26,7 +26,7 @@ var (
 func NewAnalyzer() *analysis.Analyzer {
 	return &analysis.Analyzer{
 		Name: "nxboundary",
-		Doc:  "enforce package boundaries for nx monorepos",
+		Doc:  "enforces package boundaries for nx monorepos (https://nx.dev/core-features/enforce-module-boundaries)",
 		Run:  run,
 
 		Flags: flags(config),
