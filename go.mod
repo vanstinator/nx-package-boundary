@@ -1,6 +1,6 @@
 module github.com/vanstinator/nxboundary
 
-go 1.21.6
+go 1.20
 
 require (
 	golang.org/x/mod v0.14.0
