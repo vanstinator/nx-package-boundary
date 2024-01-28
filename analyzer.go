@@ -53,7 +53,7 @@ func runWithConfig(config Config, pass *analysis.Pass) (interface{}, error) {
 	modPath := modfile.ModulePath(gomod) + "/"
 
 	for _, file := range pass.Files {
-		packageTags := fetchTags(modPath, pass.Pkg.Path())
+		nxProjectTags := fetchTags(modPath, pass.Pkg.Path())
 
 		ast.Inspect(file, func(node ast.Node) bool {
 			importSpec, ok := node.(*ast.ImportSpec)
@@ -63,21 +63,23 @@ func runWithConfig(config Config, pass *analysis.Pass) (interface{}, error) {
 
 			importPath := strings.ReplaceAll(importSpec.Path.Value, "\"", "")
 
-			importTags := fetchTags(modPath, importPath)
+			nxImportedProjectTags := fetchTags(modPath, importPath)
 
-			// If the current package has tags, the import has tags, the import is in the scope of the current module, and the import is not part of the current package, check if there's any overlap between them.
-			if (len(packageTags) > 0 || len(importTags) > 0) && strings.Contains(importPath, modPath) && !strings.Contains(importPath, pass.Pkg.Path()) {
+			// If:
+			//		the current package has tags
+			//		the import has tags
+			//		the import is in the scope of the current module
+			//		and the import is not part of the current package
+			// Check if there are any allowed tags that overlap between the current package and the import
+			if (len(nxProjectTags) > 0 || len(nxImportedProjectTags) > 0) && strings.Contains(importPath, modPath) && !strings.Contains(importPath, pass.Pkg.Path()) {
 				overlap := false
 
-				for _, packageTag := range packageTags {
-					for _, importTag := range importTags {
-						if config.IsTagAllowed(packageTag, importTag) {
+				for _, nxProjectTag := range nxProjectTags {
+					for _, nxImportedProjectTag := range nxImportedProjectTags {
+						if config.IsTagAllowed(nxProjectTag, nxImportedProjectTag) {
 							overlap = true
 							break
 						}
-					}
-					if overlap {
-						break
 					}
 				}
 
@@ -94,8 +96,9 @@ func runWithConfig(config Config, pass *analysis.Pass) (interface{}, error) {
 }
 
 func fetchTags(modulePath string, filePath string) []string {
-	// try loading project.json from package path
-	// if not found, try loading from parent directory
+	// NX projects contain a project.json file that contains tags for the project.
+	// We'll recurse up the directory tree until we find a project.json file, and cache the tags for each directory.
+	// If we don't find a project.json file and hit the root of the project directory, we'll return an empty array.
 
 	if !strings.Contains(filePath, modulePath) {
 		return []string{}
@@ -119,7 +122,7 @@ func fetchTags(modulePath string, filePath string) []string {
 	nxProjectFile, err := os.ReadFile(path + "/project.json")
 	// If we can't find a project.json file, recurse up the directory tree until we find a project.json file
 	if err != nil {
-		// If we're at the root of the project, return an empty array
+		// If we're at the root of the project directory, return an empty array
 		if path == cwd {
 			return []string{}
 		}
