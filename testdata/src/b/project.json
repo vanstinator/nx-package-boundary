@@ -1,0 +1,7 @@
+{
+  "name": "b",
+  "sourceRoot": "./testdata/src/{projectName}",
+  "projectType": "application",
+  "targets": {},
+  "tags": ["scope:b"]
+}

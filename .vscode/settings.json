@@ -1,0 +1,20 @@
+{
+  // Editor Settings
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[go]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "golang.go"
+  },
+
+  // Go Settings
+  "go.diagnostic.vulncheck": "Imports",
+  "go.lintFlags": ["--fix"],
+  "go.lintOnSave": "package",
+  "go.lintTool": "golangci-lint",
+  "gopls": {
+    "ui.semanticTokens": true,
+    "formatting.gofumpt": true
+  },
+  "go.useLanguageServer": true
+}
