@@ -2,7 +2,6 @@ package nxboundary
 
 import (
 	"encoding/json"
-	"flag"
 	"go/ast"
 	"os"
 	"path/filepath"
@@ -18,21 +17,29 @@ type NxProjectFile struct {
 }
 
 var (
-	flagSet       flag.FlagSet
 	nxPackageTags = make(map[string][]string)
+	config        = &Config{
+		DepConstraints: make(map[string][]string),
+	}
 )
 
 func NewAnalyzer() *analysis.Analyzer {
 	return &analysis.Analyzer{
-		Name:     "nxboundary",
-		Doc:      "enforce package boundaries for nx monorepos",
-		Run:      run,
-		Flags:    flagSet,
+		Name: "nxboundary",
+		Doc:  "enforce package boundaries for nx monorepos",
+		Run:  run,
+
+		Flags: flags(config),
+
 		Requires: []*analysis.Analyzer{inspect.Analyzer},
 	}
 }
 
 func run(pass *analysis.Pass) (interface{}, error) {
+	return runWithConfig(*config, pass)
+}
+
+func runWithConfig(config Config, pass *analysis.Pass) (interface{}, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return nil, err
@@ -64,9 +71,13 @@ func run(pass *analysis.Pass) (interface{}, error) {
 
 				for _, packageTag := range packageTags {
 					for _, importTag := range importTags {
-						if packageTag == importTag {
+						if config.IsTagAllowed(packageTag, importTag) {
 							overlap = true
+							break
 						}
+					}
+					if overlap {
+						break
 					}
 				}
 
