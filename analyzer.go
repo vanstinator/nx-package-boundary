@@ -53,7 +53,7 @@ func runWithConfig(config Config, pass *analysis.Pass) (interface{}, error) {
 	modPath := modfile.ModulePath(gomod) + "/"
 
 	for _, file := range pass.Files {
-		nxProjectTags := fetchTags(modPath, pass.Pkg.Path())
+		nxSourceTags := fetchTags(modPath, pass.Pkg.Path())
 
 		ast.Inspect(file, func(node ast.Node) bool {
 			importSpec, ok := node.(*ast.ImportSpec)
@@ -63,7 +63,7 @@ func runWithConfig(config Config, pass *analysis.Pass) (interface{}, error) {
 
 			importPath := strings.ReplaceAll(importSpec.Path.Value, "\"", "")
 
-			nxImportedProjectTags := fetchTags(modPath, importPath)
+			nxDependencyTags := fetchTags(modPath, importPath)
 
 			// If:
 			//		the current package has tags
@@ -71,12 +71,12 @@ func runWithConfig(config Config, pass *analysis.Pass) (interface{}, error) {
 			//		the import is in the scope of the current module
 			//		and the import is not part of the current package
 			// Check if there are any allowed tags that overlap between the current package and the import
-			if (len(nxProjectTags) > 0 || len(nxImportedProjectTags) > 0) && strings.Contains(importPath, modPath) && !strings.Contains(importPath, pass.Pkg.Path()) {
+			if (len(nxSourceTags) > 0 || len(nxDependencyTags) > 0) && strings.Contains(importPath, modPath) && !strings.Contains(importPath, pass.Pkg.Path()) {
 				overlap := false
 
-				for _, nxProjectTag := range nxProjectTags {
-					for _, nxImportedProjectTag := range nxImportedProjectTags {
-						if config.IsTagAllowed(nxProjectTag, nxImportedProjectTag) {
+				for _, nxSourceTag := range nxSourceTags {
+					for _, nxDependencyTag := range nxDependencyTags {
+						if config.IsTagAllowed(nxSourceTag, nxDependencyTag) {
 							overlap = true
 							break
 						}
